@@ -750,49 +750,67 @@
         }
 
         function selectCard(playerIndex, cardIndex) {
-            if (playerIndex !== gameState.currentPlayer) return; // Only active player can select
-            
-            const selectedCard = gameState.players[playerIndex].mano[cardIndex];
-            
-            if (selectedCard === "consome") {
-                if (alguienJugoConsome(playerIndex)) {
-                    alert("⚠️ ¡Otro jugador ya jugó consome! Esta carta será descartada.");
-                }
-            }
-            
-            // Move the card from hand to played cards
-            const [playedCard] = gameState.players[playerIndex].mano.splice(cardIndex, 1);
-            gameState.players[playerIndex].cartasJugadas.push(playedCard);
-            
-            // Check if all players have played a card for the current "trick" (turn within the round)
-            const allPlayedTheirTurn = gameState.players.every(p => p.cartasJugadas.length === gameState.players[0].cartasJugadas.length);
-            // This condition ensures everyone has played an equal number of cards in the current trick
+        if (playerIndex !== gameState.currentPlayer) return; // Ensure it's the current player's turn
+        
+        const originalCardFromHand = gameState.players[playerIndex].mano[cardIndex]; // The card the player clicked
+        let cardToPushToPlayed = originalCardFromHand; // This variable will hold the card that actually goes to cartasJugadas
 
-            // If it's the end of a "trick" (everyone played one card in this turn of the round)
-            if (allPlayedTheirTurn) {
-                // Only rotate hands if there are still cards left to play in the hand for the current round
-                // and it's not the very last card of the entire round for ALL players.
-                if (gameState.players[0].mano.length > 0) { // Check if players still have cards in hand
-                    const currentHands = gameState.players.map(player => [...player.mano]); // Create copies of current hands
-                    const numPlayers = gameState.players.length;
-
-                    for (let i = 0; i < numPlayers; i++) {
-                        // The hand of player 'i' receives the hand of player 'i-1' (circularly)
-                        gameState.players[i].mano = currentHands[(i + numPlayers - 1) % numPlayers];
-                    }
-                }
-                
-                // If all cards for the current round have been played by everyone
-                if (gameState.players.every(p => p.cartasJugadas.length === gameState.cardsPerPlayer)) {
-                    endRound();
-                    return;
-                }
+        // Logic for "tenedor" card: It transforms into the last card this player played in this round
+        if (originalCardFromHand === "tenedor") {
+            const playerPlayedCards = gameState.players[playerIndex].cartasJugadas;
+            if (playerPlayedCards.length > 0) {
+                // Tenedor copies the last card played by this player in this round
+                const lastPlayedCardByThisPlayer = playerPlayedCards[playerPlayedCards.length - 1];
+                cardToPushToPlayed = lastPlayedCardByThisPlayer; // Tenedor takes on the identity of the copied card
+                alert(`¡Tenedor se ha convertido en "${lastPlayedCardByThisPlayer}"!`); // Inform the player
+            } else {
+                // Tenedor is the first card played by this player this round, it cannot copy.
+                // It remains "tenedor", and its point value will be whatever CARD_DESCRIPTIONS specifies for "tenedor" (likely 0 points).
+                alert("¡Tenedor es tu primera carta jugada esta ronda y no puede copiar otra carta!"); // Inform the player
             }
-            
-            // Move to the next player's turn
-            gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
-            updateGameUI();
         }
+        
+        // Check for "consome" effect, applying to the potentially transformed card
+        // This ensures if a "tenedor" copies a "consome", its unique rules are still applied.
+        if (cardToPushToPlayed === "consome") {
+            if (alguienJugoConsome(playerIndex)) {
+                // This alert indicates that the 'consome' effect might be nullified because another player also played one.
+                alert("⚠️ ¡Otro jugador ya jugó consome! Esta carta (que ahora es consome) no te dará sus puntos especiales.");
+            }
+        }
+        
+        // Remove the original card from the player's hand
+        gameState.players[playerIndex].mano.splice(cardIndex, 1);
+        
+        // Add the (potentially transformed) card to the player's played cards for the current round
+        gameState.players[playerIndex].cartasJugadas.push(cardToPushToPlayed);
+        
+        // Check if all players have played their card for the current "mini-turn" within the round
+        const allPlayedInThisTurnSlot = gameState.players.every(p => p.cartasJugadas.length === gameState.currentRound);
+        
+        if (allPlayedInThisTurnSlot) {
+            // If it's not the very last "mini-turn" of the round (i.e., players still have cards to pass)
+            if (gameState.currentRound < gameState.cardsPerPlayer) {
+                // Implement hand rotation: The last player's hand passes to the first, and others shift.
+                const lastHand = gameState.players[gameState.players.length - 1].mano;
+                for (let i = gameState.players.length - 1; i > 0; i--) {
+                    gameState.players[i].mano = gameState.players[i - 1].mano;
+                }
+                gameState.players[0].mano = lastHand;
+            }
+            
+            // If this was the last "mini-turn" (all cards from hand have been played for the round)
+            if (gameState.currentRound === gameState.cardsPerPlayer) {
+                endRound(); // End the current round and calculate scores
+                return; // Exit the function to prevent further execution (like passing to next player)
+            }
+        }
+        
+        // If the round isn't over, pass the turn to the next player
+        gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
+        updateGameUI(); // Update the game interface to reflect the new current player and hands
+    }
+
 
 
         function endRound() {
