@@ -335,22 +335,22 @@
             <div id="deck-options">
                 <div class="deck-option" data-deck="Clásico">
                     <div class="deck-info">
-                        <h4>Clásico (El menu de toda la vida)</h4>
-                        <p>120 cartas - Incluye chicharron, picada, empanadas, arepas, arroz guerrillero, natilla, mantequilla y tenedor.</p>
+                        <h4>Clásico</h4>
+                        <p>120 cartas - Incluye chicharron, picada, empanadas y más</p>
                     </div>
                 </div>
                 
                 <div class="deck-option" data-deck="Con Esta No Engordo">
                     <div class="deck-info">
-                        <h4>Con Esta No Engordo (Comida potente para sumar muchos puntos)</h4>
-                        <p>120 cartas - Incluye chicharron, yuca, empanada, arepas, arroz con pollo, mantequilla, tenedor y ensalada de fruta.</p>
+                        <h4>Con Esta No Engordo</h4>
+                        <p>120 cartas - Incluye yuca, arroz guerrillero y ensalada de fruta</p>
                     </div>
                 </div>
                 
                 <div class="deck-option" data-deck="El Ejecutivo">
                     <div class="deck-info">
-                        <h4>El Ejecutivo (Para suplir el hambre) </h4>
-                        <p>120 cartas - Incluye chicharron, picada, consome, arepas, mantequilla, arroz guerrillero y ensalada de fruta.</p>
+                        <h4>El Ejecutivo</h4>
+                        <p>120 cartas - Incluye consome, arroz guerrillero y ensalada de fruta</p>
                     </div>
                 </div>
             </div>
@@ -426,9 +426,9 @@
                 "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense",
                 "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena",
                 "arepa", "arepa", "arepa", "arepa", "arepa",
-                "arroz con pollo(1)", "arroz con pollo(1)", "arroz con pollo(1)", "arroz con pollo(1)", "arroz con pollo(1)", "arroz con pollo(1)",
-                "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)",
-                "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)",
+                "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)",
+                "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)",
+                "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)",
                 "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta",
                 "mantequilla", "mantequilla", "mantequilla", "mantequilla", "mantequilla", "mantequilla",
                 "tenedor", "tenedor", "tenedor", "tenedor",
@@ -559,7 +559,7 @@
             "chicharron": {
                 description: "Sumas puntos por cada par de chicharrones. Cuantos más pares, más puntos.",
                 points: "5 puntos por cada 2 chicharrones."
-                // image: "WhatsApp Image 2025-07-22 at 2.24.33 PM.jpeg"
+                // image: "images/chicharron.png"
             },
             "picada": {
                 description: "Obtienes puntos por cada tres picadas. Un plato abundante para grandes puntuaciones.",
@@ -621,21 +621,7 @@
                 points: "1 yuca: 1 punto. 2 yucas: 6 puntos."
                 // image: "images/yuca.png"
             },
-            "arroz con pollo(1)": {
-                description: "Parte de la serie Arroz con Pollo. Contribuye a la suma total para el bono de mayoría.",
-                points: "+1 al conteo de Arroz con Pollo."
-                // image: "images/arroz_con_pollo1.png"
-            },
-            "arroz con pollo(2)": {
-                description: "Parte de la serie Arroz con Pollo. Contribuye significativamente al bono de mayoría.",
-                points: "+2 al conteo de Arroz con Pollo."
-                // image: "images/arroz_con_pollo2.png"
-            },
-            "arroz con pollo(3)": {
-                description: "La carta de Arroz con Pollo de mayor valor. Es clave para obtener la mayoría.",
-                points: "+3 al conteo de Arroz con Pollo."
-                // image: "images/arroz_con_pollo3.png"
-            },
+           
             "ensalada de fruta": {
                 description: "Las ensaladas de fruta dan puntos al final del juego al tener sets de 4.",
                 points: "12 puntos por cada 4 ensaladas de fruta."
@@ -750,70 +736,55 @@
         }
 
         function selectCard(playerIndex, cardIndex) {
-        if (playerIndex !== gameState.currentPlayer) return; // Ensure it's the current player's turn
-        
-        const originalCardFromHand = gameState.players[playerIndex].mano[cardIndex]; // The card the player clicked
-        let cardToPushToPlayed = originalCardFromHand; // This variable will hold the card that actually goes to cartasJugadas
-
-        // Logic for "tenedor" card: It transforms into the last card this player played in this round
-        if (originalCardFromHand === "tenedor") {
-            const playerPlayedCards = gameState.players[playerIndex].cartasJugadas;
-            if (playerPlayedCards.length > 0) {
-                // Tenedor copies the last card played by this player in this round
-                const lastPlayedCardByThisPlayer = playerPlayedCards[playerPlayedCards.length - 1];
-                cardToPushToPlayed = lastPlayedCardByThisPlayer; // Tenedor takes on the identity of the copied card
-                alert(`¡Tenedor se ha convertido en "${lastPlayedCardByThisPlayer}"!`); // Inform the player
-            } else {
-                // Tenedor is the first card played by this player this round, it cannot copy.
-                // It remains "tenedor", and its point value will be whatever CARD_DESCRIPTIONS specifies for "tenedor" (likely 0 points).
-                alert("¡Tenedor es tu primera carta jugada esta ronda y no puede copiar otra carta!"); // Inform the player
-            }
-        }
-        
-        // Check for "consome" effect, applying to the potentially transformed card
-        // This ensures if a "tenedor" copies a "consome", its unique rules are still applied.
-        if (cardToPushToPlayed === "consome") {
-            if (alguienJugoConsome(playerIndex)) {
-                // This alert indicates that the 'consome' effect might be nullified because another player also played one.
-                alert("⚠️ ¡Otro jugador ya jugó consome! Esta carta (que ahora es consome) no te dará sus puntos especiales.");
-            }
-        }
-        
-        // Remove the original card from the player's hand
-        gameState.players[playerIndex].mano.splice(cardIndex, 1);
-        
-        // Add the (potentially transformed) card to the player's played cards for the current round
-        gameState.players[playerIndex].cartasJugadas.push(cardToPushToPlayed);
-        
-        // Check if all players have played their card for the current "mini-turn" within the round
-        const allPlayedInThisTurnSlot = gameState.players.every(p => p.cartasJugadas.length === gameState.currentRound);
-        
-        if (allPlayedInThisTurnSlot) {
-            // If it's not the very last "mini-turn" of the round (i.e., players still have cards to pass)
-            if (gameState.currentRound < gameState.cardsPerPlayer) {
-                // Implement hand rotation: The last player's hand passes to the first, and others shift.
-                const lastHand = gameState.players[gameState.players.length - 1].mano;
-                for (let i = gameState.players.length - 1; i > 0; i--) {
-                    gameState.players[i].mano = gameState.players[i - 1].mano;
+            if (playerIndex !== gameState.currentPlayer) return; // Only active player can select
+            
+            const selectedCard = gameState.players[playerIndex].mano[cardIndex];
+            
+            if (selectedCard === "consome") {
+                if (alguienJugoConsome(playerIndex)) {
+                    alert("⚠️ ¡Otro jugador ya jugó consome! Esta carta será descartada.");
                 }
-                gameState.players[0].mano = lastHand;
             }
             
-            // If this was the last "mini-turn" (all cards from hand have been played for the round)
-            if (gameState.currentRound === gameState.cardsPerPlayer) {
-                endRound(); // End the current round and calculate scores
-                return; // Exit the function to prevent further execution (like passing to next player)
-            }
-        }
-        
-        // If the round isn't over, pass the turn to the next player
-        gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
-        updateGameUI(); // Update the game interface to reflect the new current player and hands
-    }
+            // Move the card from hand to played cards
+            const [playedCard] = gameState.players[playerIndex].mano.splice(cardIndex, 1);
+            gameState.players[playerIndex].cartasJugadas.push(playedCard);
+            
+            // Check if all players have played a card for the current "trick" (turn within the round)
+            const allPlayedTheirTurn = gameState.players.every(p => p.cartasJugadas.length === gameState.players[0].cartasJugadas.length);
+            // This condition ensures everyone has played an equal number of cards in the current trick
 
+            // If it's the end of a "trick" (everyone played one card in this turn of the round)
+            if (allPlayedTheirTurn) {
+                // Only rotate hands if there are still cards left to play in the hand for the current round
+                // and it's not the very last card of the entire round for ALL players.
+                if (gameState.players[0].mano.length > 0) { // Check if players still have cards in hand
+                    const currentHands = gameState.players.map(player => [...player.mano]); // Create copies of current hands
+                    const numPlayers = gameState.players.length;
+
+                    for (let i = 0; i < numPlayers; i++) {
+                        // The hand of player 'i' receives the hand of player 'i-1' (circularly)
+                        gameState.players[i].mano = currentHands[(i + numPlayers - 1) % numPlayers];
+                    }
+                }
+                
+                // If all cards for the current round have been played by everyone
+                if (gameState.players.every(p => p.cartasJugadas.length === gameState.cardsPerPlayer)) {
+                    endRound();
+                    return;
+                }
+            }
+            
+            // Move to the next player's turn
+            gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
+            updateGameUI();
+        }
 
 
         function endRound() {
+            // Calcular puntuaciones de la ronda
+            calculateScores();
+            
             // Pasar a la siguiente ronda o terminar el juego
             if (gameState.currentRound < gameState.totalRounds) {
                 gameState.currentRound++;
@@ -826,9 +797,8 @@
         }
 
         function calculateScores() {
-            // Arrays para contar arroz guerrillero y arroz con pollo
+            // Arrays para contar arroz guerrillero
             const arrozGuerrilleros = Array(gameState.players.length).fill(0);
-            const arrozConPollos = Array(gameState.players.length).fill(0);
             
             // Clear current points for recalculation based on all played cards
             gameState.players.forEach(player => {
@@ -888,12 +858,11 @@
                     player.puntos += 3;
                 }
                 
-                // Contar arroces
+                // Contar arroces (now only arroz guerrillero)
                 arrozGuerrilleros[j] = contarArrozGuerrillero(player.cartasJugadas);
-                arrozConPollos[j] = contarArrozConPollo(player.cartasJugadas);
             });
             
-            // Calcular puntos por arroz guerrillero
+            // Calcular puntos por arroz guerrillero (applies to both decks now)
             const maxArrozGuerrillero = Math.max(...arrozGuerrilleros);
             if (maxArrozGuerrillero > 0) {
                 // Find the second highest, filtering out values equal to the max
@@ -902,28 +871,13 @@
                 
                 gameState.players.forEach((player, j) => {
                     if (arrozGuerrilleros[j] === maxArrozGuerrillero) {
-                        player.puntos += 6;
+                        player.puntos += 6; // Highest adds 6
                     } else if (arrozGuerrilleros[j] === segundoArrozGuerrillero && segundoArrozGuerrillero > 0) {
-                        player.puntos += 3;
+                        player.puntos += 3; // Second highest adds 3
                     }
                 });
             }
             
-            // Calcular puntos por arroz con pollo
-            const maxArrozConPollo = Math.max(...arrozConPollos);
-            if (maxArrozConPollo > 0) {
-                // Find the second highest, filtering out values equal to the max
-                const uniqueArrozConPollos = [...new Set(arrozConPollos)].sort((a,b) => b-a);
-                const segundoArrozConPollo = uniqueArrozConPollos.length > 1 ? uniqueArrozConPollos[1] : -1; // -1 if no second highest
-                
-                gameState.players.forEach((player, j) => {
-                    if (arrozConPollos[j] === maxArrozConPollo) {
-                        player.puntos += 4;
-                    } else if (arrozConPollos[j] === segundoArrozConPollo && segundoArrozConPollo > 0) {
-                        player.puntos -= 4;
-                    }
-                });
-            }
             
             // Mostrar puntuación parcial (this will now show the cumulative score)
             showScores();
@@ -1002,14 +956,6 @@
             }, 0);
         }
 
-        function contarArrozConPollo(cartas) {
-            return cartas.reduce((total, carta) => {
-                if (carta === "arroz con pollo(1)") return total + 1;
-                if (carta === "arroz con pollo(2)") return total + 2;
-                if (carta === "arroz con pollo(3)") return total + 3;
-                return total;
-            }, 0);
-        }
 
         function alguienJugoConsome(jugadorActual) {
             // Check if any OTHER player has played 'consome' among all their played cards.
