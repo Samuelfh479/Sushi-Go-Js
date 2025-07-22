@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>La Comilona - Pa que vuelva y repita</title>
+    <style>
+        :root {
+            --primary-color: #FF6B6B;
+            --secondary-color: #4ECDC4;
+            --accent-color: #FFE66D;
+            --dark-color: #292F36;
+            --light-color: #F7FFF7;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        
+        .game-section {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .setup-section {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        select, input, button {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: #e05555;
+        }
+        
+        .deck-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .deck-option:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .deck-option.selected {
+            background-color: var(--accent-color);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .deck-info {
+            margin-left: 15px;
+        }
+        
+        .game-board {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .players-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .player-area {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .player-area.active {
+            border: 3px solid var(--primary-color);
+        }
+        
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .player-name {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .player-points {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .hand-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .card {
+            width: 80px;
+            height: 120px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            padding: 5px;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card.selected {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--accent-color);
+        }
+        
+        .played-cards {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed #ddd;
+        }
+        
+        .played-cards-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .played-cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .played-card {
+            width: 60px;
+            height: 90px;
+            background-color: #ddd;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.8rem;
+            padding: 3px;
+            box-sizing: border-box;
+        }
+        
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .round-info {
+            text-align: center;
+            font-size: 1.2rem;
+            margin: 20px 0;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-title {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+        
+        .close-modal {
+            background-color: var(--dark-color);
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .players-container {
+                flex-direction: column;
+            }
+            
+            .player-area {
+                min-width: 100%;
+            }
+            
+            .card {
+                width: 60px;
+                height: 90px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1> 🇨🇴 La Comilona 🇨🇴 </h1>
+            <p>Pa que coma y repita</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <section id="setup-section" class="setup-section">
+            <h2>Configuración del Juego</h2>
+            
+            <div class="form-group">
+                <label for="player-count">Número de Jugadores (2-5):</label>
+                <input type="number" id="player-count" min="2" max="5" value="2">
+            </div>
+            
+            <div class="form-group">
+                <label for="round-count">Número de Rondas (1-5):</label>
+                <input type="number" id="round-count" min="1" max="5" value="1">
+            </div>
+            
+            <h3>Selecciona un Mazo:</h3>
+            <div id="deck-options">
+                <div class="deck-option" data-deck="Clásico">
+                    <div class="deck-info">
+                        <h4>Clásico</h4>
+                        <p>120 cartas - Incluye chicharron, picada, empanadas y más</p>
+                    </div>
+                </div>
+                
+                <div class="deck-option" data-deck="Sushi Deluxe">
+                    <div class="deck-info">
+                        <h4>Sushi Deluxe</h4>
+                        <p>120 cartas - Incluye yuca, arroz con pollo y ensalada de fruta</p>
+                    </div>
+                </div>
+                
+                <div class="deck-option" data-deck="mi primer aperitivo">
+                    <div class="deck-info">
+                        <h4>Mi Primer Aperitivo</h4>
+                        <p>120 cartas - Incluye consome, arroz guerrillero y ensalada de fruta</p>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="start-game">Comenzar Juego</button>
+        </section>
+        
+        <section id="game-section" class="game-section">
+            <div class="round-info" id="round-info">Ronda 1 de 3</div>
+            
+            <div class="game-board">
+                <div class="players-container" id="players-container">
+                    <!-- Jugadores se añadirán aquí dinámicamente -->
+                </div>
+                
+                <div class="game-controls">
+                    <button id="end-round">Terminar Ronda</button>
+                    <button id="show-scores">Ver Puntuaciones</button>
+                    <button id="end-game">Terminar Juego</button>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <div id="scores-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Puntuaciones</h2>
+            <div id="scores-content">
+                <!-- Contenido de puntuaciones se añadirá aquí -->
+            </div>
+            <button class="close-modal">Cerrar</button>
+        </div>
+    </div>
+    
+    <div id="endgame-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Resultados Finales</h2>
+            <div id="endgame-content">
+                <!-- Contenido final se añadirá aquí -->
+            </div>
+            <button class="close-modal">Cerrar</button>
+            <button id="new-game">Nuevo Juego</button>
+        </div>
+    </div>
+    
+    <script>
+        // Datos del juego
+        const MAZOS = {
+            "Clásico": [
+                "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron",
+                "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada",
+                "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas",
+                "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense",
+                "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena",
+                "arepa", "arepa", "arepa", "arepa", "arepa",
+                "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)",
+                "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)",
+                "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)",
+                "natilla", "natilla", "natilla", "natilla", "natilla", "natilla", "natilla", "natilla", "natilla", "natilla",
+                "mantequilla", "mantequilla", "mantequilla", "mantequilla", "mantequilla", "mantequilla",
+                "tenedor", "tenedor", "tenedor", "tenedor"
+            ],
+            "Sushi Deluxe": [
+                "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron",
+                "yuca", "yuca", "yuca", "yuca", "yuca", "yuca", "yuca", "yuca", "yuca", "yuca","yuca", "yuca", "yuca", "yuca", "yuca",
+                "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas", "empanadas",
+                "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense",
+                "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena",
+                "arepa", "arepa", "arepa", "arepa", "arepa",
+                "arroz con pollo(1)", "arroz con pollo(1)", "arroz con pollo(1)", "arroz con pollo(1)", "arroz con pollo(1)", "arroz con pollo(1)",
+                "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)",
+                "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)",
+                "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta",
+                "mantequilla", "mantequilla", "mantequilla", "mantequilla", "mantequilla", "mantequilla",
+                "tenedor", "tenedor", "tenedor", "tenedor",
+            ],
+            "mi primer aperitivo": [
+                "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron", "chicharron",
+                "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada", "picada",
+                "consome", "consome", "consome", "consome", "consome", "consome", "consome", "consome", "consome", "consome", "consome", "consome", "consome", "consome", "consome", "consome",
+                "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense",
+                "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena",
+                "arepa", "arepa", "arepa", "arepa", "arepa",
+                "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)",
+                "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)",
+                "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)",
+                "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta",
+                "mantequilla", "mantequilla", "mantequilla", "mantequilla", "mantequilla", "mantequilla",
+                "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta",
+            ]
+        };
+
+        // Variables del juego
+        let gameState = {
+            players: [],
+            currentRound: 1,
+            totalRounds: 1,
+            currentPlayer: 0,
+            selectedDeck: "",
+            cardsPerPlayer: 0,
+            gamePhase: "setup" // setup, playing, roundEnd, gameEnd
+        };
+
+        // Elementos del DOM
+        const setupSection = document.getElementById('setup-section');
+        const gameSection = document.getElementById('game-section');
+        const playersContainer = document.getElementById('players-container');
+        const roundInfo = document.getElementById('round-info');
+        const deckOptions = document.querySelectorAll('.deck-option');
+        const startGameBtn = document.getElementById('start-game');
+        const endRoundBtn = document.getElementById('end-round');
+        const showScoresBtn = document.getElementById('show-scores');
+        const endGameBtn = document.getElementById('end-game');
+        const scoresModal = document.getElementById('scores-modal');
+        const scoresContent = document.getElementById('scores-content');
+        const endgameModal = document.getElementById('endgame-modal');
+        const endgameContent = document.getElementById('endgame-content');
+        const newGameBtn = document.getElementById('new-game');
+        const closeModalBtns = document.querySelectorAll('.close-modal');
+
+        // Event Listeners
+        startGameBtn.addEventListener('click', startGame);
+        endRoundBtn.addEventListener('click', endRound);
+        showScoresBtn.addEventListener('click', showScores);
+        endGameBtn.addEventListener('click', endGame);
+        newGameBtn.addEventListener('click', resetGame);
+        
+        closeModalBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                scoresModal.style.display = 'none';
+                endgameModal.style.display = 'none';
+            });
+        });
+
+        deckOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                deckOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                gameState.selectedDeck = option.dataset.deck;
+            });
+        });
+
+        // Funciones del juego
+        function startGame() {
+            const playerCount = parseInt(document.getElementById('player-count').value);
+            const roundCount = parseInt(document.getElementById('round-count').value);
+            
+            if (playerCount < 2 || playerCount > 5) {
+                alert("Número de jugadores inválido. Debe ser entre 2 y 5.");
+                return;
+            }
+            
+            if (roundCount < 1 || roundCount > 5) {
+                alert("Número de rondas inválido. Debe ser entre 1 y 5.");
+                return;
+            }
+            
+            if (!gameState.selectedDeck) {
+                alert("Por favor selecciona un mazo para jugar.");
+                return;
+            }
+            
+            // Configurar el juego
+            gameState.players = Array(playerCount).fill().map(() => ({
+                mano: [],
+                cartasJugadas: [],
+                puntos: 0,
+                natillas: 0,
+                ensalada_fruta: 0
+            }));
+            
+            gameState.totalRounds = roundCount;
+            gameState.currentRound = 1;
+            gameState.currentPlayer = 0;
+            
+            // Determinar cartas por jugador según número de jugadores
+            switch (playerCount) {
+                case 2: gameState.cardsPerPlayer = 10; break;
+                case 3: gameState.cardsPerPlayer = 9; break;
+                case 4: gameState.cardsPerPlayer = 8; break;
+                case 5: gameState.cardsPerPlayer = 7; break;
+            }
+            
+            // Cambiar a la vista del juego
+            setupSection.style.display = 'none';
+            gameSection.style.display = 'block';
+            gameState.gamePhase = "playing";
+            
+            // Iniciar la primera ronda
+            startRound();
+        }
+
+        function startRound() {
+            // Barajar el mazo
+            const mazo = [...MAZOS[gameState.selectedDeck]];
+            shuffleArray(mazo);
+            
+            // Repartir cartas a los jugadores
+            for (let i = 0; i < gameState.players.length; i++) {
+                gameState.players[i].mano = [];
+                gameState.players[i].cartasJugadas = [];
+                
+                for (let j = 0; j < gameState.cardsPerPlayer; j++) {
+                    const cardIndex = i * gameState.cardsPerPlayer + j;
+                    if (cardIndex < mazo.length) {
+                        gameState.players[i].mano.push(mazo[cardIndex]);
+                    }
+                }
+            }
+            
+            // Actualizar la interfaz
+            updateGameUI();
+            roundInfo.textContent = `Ronda ${gameState.currentRound} de ${gameState.totalRounds}`;
+        }
+
+        function updateGameUI() {
+            playersContainer.innerHTML = '';
+            
+            gameState.players.forEach((player, index) => {
+                const playerArea = document.createElement('div');
+                playerArea.className = `player-area ${index === gameState.currentPlayer ? 'active' : ''}`;
+                
+                playerArea.innerHTML = `
+                    <div class="player-header">
+                        <div class="player-name">Jugador ${index + 1}</div>
+                        <div class="player-points">${player.puntos} pts</div>
+                    </div>
+                    <div class="hand-container" id="hand-${index}"></div>
+                    <div class="played-cards">
+                        <div class="played-cards-title">Cartas Jugadas:</div>
+                        <div class="played-cards-container" id="played-${index}"></div>
+                    </div>
+                `;
+                
+                playersContainer.appendChild(playerArea);
+                
+                // Añadir cartas a la mano
+                const handContainer = document.getElementById(`hand-${index}`);
+                player.mano.forEach((card, cardIndex) => {
+                    const cardElement = document.createElement('div');
+                    cardElement.className = 'card';
+                    cardElement.textContent = card;
+                    cardElement.dataset.cardIndex = cardIndex;
+                    
+                    if (index === gameState.currentPlayer) {
+                        cardElement.addEventListener('click', () => selectCard(index, cardIndex));
+                    }
+                    
+                    handContainer.appendChild(cardElement);
+                });
+                
+                // Añadir cartas jugadas
+                const playedContainer = document.getElementById(`played-${index}`);
+                player.cartasJugadas.forEach(card => {
+                    const playedCard = document.createElement('div');
+                    playedCard.className = 'played-card';
+                    playedCard.textContent = card;
+                    playedContainer.appendChild(playedCard);
+                });
+            });
+        }
+
+        function selectCard(playerIndex, cardIndex) {
+            if (playerIndex !== gameState.currentPlayer) return;
+            
+            const selectedCard = gameState.players[playerIndex].mano[cardIndex];
+            
+            if (selectedCard === "consome") {
+                if (alguienJugoConsome(playerIndex)) {
+                    alert("⚠️ ¡Otro jugador ya jugó consome! Esta carta será descartada.");
+                }
+            }
+            
+            // Mover la carta de la mano a las cartas jugadas
+            const [playedCard] = gameState.players[playerIndex].mano.splice(cardIndex, 1);
+            gameState.players[playerIndex].cartasJugadas.push(playedCard);
+            
+            // Verificar si todos han jugado
+            const allPlayed = gameState.players.every(p => p.cartasJugadas.length === gameState.currentRound);
+            
+            if (allPlayed) {
+                // Rotar manos si no es el último turno
+                if (gameState.currentRound < gameState.cardsPerPlayer) {
+                    const lastHand = gameState.players[gameState.players.length - 1].mano;
+                    for (let i = gameState.players.length - 1; i > 0; i--) {
+                        gameState.players[i].mano = gameState.players[i - 1].mano;
+                    }
+                    gameState.players[0].mano = lastHand;
+                }
+                
+                // Calcular puntuaciones si es el final de la ronda
+                if (gameState.currentRound === gameState.cardsPerPlayer) {
+                    endRound();
+                    return;
+                }
+            }
+            
+            // Pasar al siguiente jugador
+            gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
+            updateGameUI();
+        }
+
+        function endRound() {
+            // Calcular puntuaciones de la ronda
+            calculateScores();
+            
+            // Pasar a la siguiente ronda o terminar el juego
+            if (gameState.currentRound < gameState.totalRounds) {
+                gameState.currentRound++;
+                gameState.currentPlayer = 0;
+                startRound();
+            } else {
+                calculateFinalScores();
+                endGame();
+            }
+        }
+
+        function calculateScores() {
+            // Arrays para contar arroz guerrillero y arroz con pollo
+            const arrozGuerrilleros = Array(gameState.players.length).fill(0);
+            const arrozConPollos = Array(gameState.players.length).fill(0);
+            
+            // Primera pasada: contar cartas especiales y puntos básicos
+            gameState.players.forEach((player, j) => {
+                const contador = {};
+                
+                // Contar cada tipo de carta
+                player.cartasJugadas.forEach(carta => {
+                    contador[carta] = (contador[carta] || 0) + 1;
+                    
+                    // Contar natillas y ensaladas
+                    if (carta === "natilla") player.natillas++;
+                    if (carta === "ensalada de fruta") player.ensalada_fruta++;
+                });
+                
+                // Calcular puntos básicos
+                player.puntos += Math.floor((contador["chicharron"] || 0) / 2) * 5;
+                player.puntos += Math.floor((contador["picada"] || 0) / 3) * 10;
+                player.puntos += puntosEmpanadas(contador["empanadas"] || 0);
+                player.puntos += puntosYuca(contador["yuca"] || 0);
+                player.puntos += (contador["arepa boyacense"] || 0) * 2;
+                player.puntos += (contador["arepa rellena"] || 0) * 3;
+                player.puntos += (contador["arepa"] || 0);
+                
+                // Puntos por consome (si nadie más la jugó)
+                if ((contador["consome"] || 0) > 0 && !alguienJugoConsome(j)) {
+                    player.puntos += 3;
+                    
+                    // Puntos por aguapanela (ensalada de fruta)
+                    const cartasAguapanela = contador["ensalada de fruta"] || 0;
+                    if (cartasAguapanela > 0) {
+                        const tipoMasRepetido = obtenerTipoMasRepetido(player.cartasJugadas);
+                        const puntosAguapanela = tipoMasRepetido.cantidad * cartasAguapanela;
+                        player.puntos += puntosAguapanela;
+                    }
+                }
+                
+                // Contar arroces
+                arrozGuerrilleros[j] = contarArrozGuerrillero(player.cartasJugadas);
+                arrozConPollos[j] = contarArrozConPollo(player.cartasJugadas);
+            });
+            
+            // Calcular puntos por arroz guerrillero
+            const maxArrozGuerrillero = Math.max(...arrozGuerrilleros);
+            if (maxArrozGuerrillero > 0) {
+                const segundoArrozGuerrillero = Math.max(...arrozGuerrilleros.filter(val => val < maxArrozGuerrillero));
+                
+                gameState.players.forEach((player, j) => {
+                    if (arrozGuerrilleros[j] === maxArrozGuerrillero) {
+                        player.puntos += 6;
+                    } else if (arrozGuerrilleros[j] === segundoArrozGuerrillero && segundoArrozGuerrillero > 0) {
+                        player.puntos += 3;
+                    }
+                });
+            }
+            
+            // Calcular puntos por arroz con pollo
+            const maxArrozConPollo = Math.max(...arrozConPollos);
+            if (maxArrozConPollo > 0) {
+                const segundoArrozConPollo = Math.max(...arrozConPollos.filter(val => val < maxArrozConPollo));
+                
+                gameState.players.forEach((player, j) => {
+                    if (arrozConPollos[j] === maxArrozConPollo) {
+                        player.puntos += 4;
+                    } else if (arrozConPollos[j] === segundoArrozConPollo && segundoArrozConPollo > 0) {
+                        player.puntos -= 4;
+                    }
+                });
+            }
+            
+            // Mostrar puntuación parcial
+            showScores();
+        }
+
+        function calculateFinalScores() {
+            // Primero calcular puntuación normal
+            calculateScores();
+            
+            // Luego añadir puntos finales por natillas y ensaladas
+            const natillas = gameState.players.map(p => p.natillas);
+            const maxNatilla = Math.max(...natillas);
+            const minNatilla = Math.min(...natillas.filter(n => n > 0));
+            
+            gameState.players.forEach(player => {
+                if (player.natillas === maxNatilla && maxNatilla > 0) {
+                    player.puntos += 6;
+                }
+                if (player.natillas === minNatilla && minNatilla > 0) {
+                    player.puntos -= 6;
+                }
+                
+                // Puntos por ensalada de fruta (12 puntos por cada 4 cartas)
+                player.puntos += Math.floor(player.ensalada_fruta / 4) * 12;
+            });
+        }
+
+        // Funciones auxiliares para el cálculo de puntos
+        function puntosEmpanadas(cantidad) {
+            if (cantidad === 1) return 1;
+            if (cantidad === 2) return 3;
+            if (cantidad === 3) return 6;
+            if (cantidad === 4) return 10;
+            if (cantidad >= 5) return 15;
+            return 0;
+        }
+
+        function puntosYuca(cantidad) {
+            if (cantidad === 1) return 1;
+            if (cantidad === 2) return 6;
+            return 0;
+        }
+
+        function contarArrozGuerrillero(cartas) {
+            return cartas.reduce((total, carta) => {
+                if (carta === "arroz guerrillero(1)") return total + 1;
+                if (carta === "arroz guerrillero(2)") return total + 2;
+                if (carta === "arroz guerrillero(3)") return total + 3;
+                return total;
+            }, 0);
+        }
+
+        function contarArrozConPollo(cartas) {
+            return cartas.reduce((total, carta) => {
+                if (carta === "arroz con pollo(1)") return total + 1;
+                if (carta === "arroz con pollo(2)") return total + 2;
+                if (carta === "arroz con pollo(3)") return total + 3;
+                return total;
+            }, 0);
+        }
+
+        function alguienJugoConsome(jugadorActual) {
+            return gameState.players.some((player, index) => 
+                index !== jugadorActual && 
+                player.cartasJugadas.includes("consome")
+            );
+        }
+
+        function obtenerTipoMasRepetido(cartas) {
+            const contador = {};
+            
+            // Excluir ensalada de fruta del conteo
+            cartas.forEach(carta => {
+                if (carta !== "ensalada de fruta") {
+                    contador[carta] = (contador[carta] || 0) + 1;
+                }
+            });
+            
+            if (Object.keys(contador).length === 0) return { tipo: "", cantidad: 0 };
+            
+            let maxTipo = "";
+            let maxCantidad = 0;
+            
+            for (const [tipo, cantidad] of Object.entries(contador)) {
+                if (cantidad > maxCantidad) {
+                    maxTipo = tipo;
+                    maxCantidad = cantidad;
+                }
+            }
+            
+            return { tipo: maxTipo, cantidad: maxCantidad };
+        }
+
+        function showScores() {
+            scoresContent.innerHTML = '';
+            
+            gameState.players.forEach((player, index) => {
+                const playerScore = document.createElement('div');
+                playerScore.innerHTML = `
+                    <h3>Jugador ${index + 1}</h3>
+                    <p>Puntos: ${player.puntos}</p>
+                    <p>Natillas: ${player.natillas}</p>
+                    <p>Ensaladas de fruta: ${player.ensalada_fruta}</p>
+                    <hr>
+                `;
+                scoresContent.appendChild(playerScore);
+            });
+            
+            scoresModal.style.display = 'flex';
+        }
+
+        function endGame() {
+            // Mostrar resultados finales
+            endgameContent.innerHTML = '<h3>Resultados Finales</h3>';
+            
+            // Ordenar jugadores por puntuación
+            const sortedPlayers = [...gameState.players].map((p, i) => ({...p, index: i}))
+                .sort((a, b) => b.puntos - a.puntos);
+            
+            sortedPlayers.forEach((player, position) => {
+                const playerResult = document.createElement('div');
+                playerResult.innerHTML = `
+                    <p><strong>${position + 1}º - Jugador ${player.index + 1}</strong></p>
+                    <p>Puntos totales: ${player.puntos}</p>
+                    <p>Natillas: ${player.natillas}</p>
+                    <p>Ensaladas de fruta: ${player.ensalada_fruta}</p>
+                    <hr>
+                `;
+                endgameContent.appendChild(playerResult);
+            });
+            
+            endgameModal.style.display = 'flex';
+            gameState.gamePhase = "gameEnd";
+        }
+
+        function resetGame() {
+            // Volver a la configuración inicial
+            gameState = {
+                players: [],
+                currentRound: 1,
+                totalRounds: 1,
+                currentPlayer: 0,
+                selectedDeck: "",
+                cardsPerPlayer: 0,
+                gamePhase: "setup"
+            };
+            
+            endgameModal.style.display = 'none';
+            gameSection.style.display = 'none';
+            setupSection.style.display = 'block';
+            
+            // Restablecer selección de mazo
+            deckOptions.forEach(opt => opt.classList.remove('selected'));
+            document.getElementById('player-count').value = 2;
+            document.getElementById('round-count').value = 1;
+        }
+
+        // Función auxiliar para barajar array
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    </script>
+</body>
+</html>
