@@ -343,7 +343,7 @@
                 <div class="deck-option" data-deck="Con Esta No Engordo">
                     <div class="deck-info">
                         <h4>Con Esta No Engordo</h4>
-                        <p>120 cartas - Incluye yuca, arroz con pollo y ensalada de fruta</p>
+                        <p>120 cartas - Incluye yuca, arroz guerrillero y ensalada de fruta</p>
                     </div>
                 </div>
                 
@@ -426,9 +426,9 @@
                 "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense", "arepa boyacense",
                 "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena", "arepa rellena",
                 "arepa", "arepa", "arepa", "arepa", "arepa",
-                "arroz con pollo(1)", "arroz con pollo(1)", "arroz con pollo(1)", "arroz con pollo(1)", "arroz con pollo(1)", "arroz con pollo(1)",
-                "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)", "arroz con pollo(2)",
-                "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)", "arroz con pollo(3)",
+                "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)", "arroz guerrillero(1)",
+                "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)", "arroz guerrillero(2)",
+                "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)", "arroz guerrillero(3)",
                 "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta", "ensalada de fruta",
                 "mantequilla", "mantequilla", "mantequilla", "mantequilla", "mantequilla", "mantequilla",
                 "tenedor", "tenedor", "tenedor", "tenedor",
@@ -606,9 +606,10 @@
                 points: "El que tiene más natillas al final, gana 6 puntos. El que tiene menos, pierde 6 puntos."
                 // image: "images/natilla.png"
             },
-            "mantequilla": {
-                description: "Si juegas 'mantequilla' y la siguiente carta que juegas es una arepa (de cualquier tipo), esa arepa vale el triple de sus puntos base.",
-                points: "0 puntos. Triplica los puntos de la siguiente arepa jugada por el mismo jugador."
+            "mantequilla": 
+                description: "Si juegas 'mantequilla' y la *siguiente* carta que juegas en la misma ronda es una arepa (arepa, arepa boyacense o arepa rellena), esa arepa vale el triple de sus puntos base.",
+                points: "0 puntos. Triplica los puntos de la siguiente arepa jugada por el mismo jugador en la misma ronda."
+
                 // image: "images/mantequilla.png"
             },
             "tenedor": {
@@ -621,21 +622,7 @@
                 points: "1 yuca: 1 punto. 2 yucas: 6 puntos."
                 // image: "images/yuca.png"
             },
-            "arroz con pollo(1)": {
-                description: "Parte de la serie Arroz con Pollo. Contribuye a la suma total para el bono de mayoría.",
-                points: "+1 al conteo de Arroz con Pollo."
-                // image: "images/arroz_con_pollo1.png"
-            },
-            "arroz con pollo(2)": {
-                description: "Parte de la serie Arroz con Pollo. Contribuye significativamente al bono de mayoría.",
-                points: "+2 al conteo de Arroz con Pollo."
-                // image: "images/arroz_con_pollo2.png"
-            },
-            "arroz con pollo(3)": {
-                description: "La carta de Arroz con Pollo de mayor valor. Es clave para obtener la mayoría.",
-                points: "+3 al conteo de Arroz con Pollo."
-                // image: "images/arroz_con_pollo3.png"
-            },
+           
             "ensalada de fruta": {
                 description: "Las ensaladas de fruta dan puntos al final del juego al tener sets de 4.",
                 points: "12 puntos por cada 4 ensaladas de fruta."
@@ -686,6 +673,8 @@
             for (let i = 0; i < gameState.players.length; i++) {
                 gameState.players[i].mano = [];
                 gameState.players[i].cartasJugadas = [];
+                // Reset points for the new round's calculation (cumulative)
+                gameState.players[i].puntos = 0; 
                 
                 for (let j = 0; j < gameState.cardsPerPlayer; j++) {
                     const cardIndex = i * gameState.cardsPerPlayer + j;
@@ -825,10 +814,16 @@
         }
 
         function calculateScores() {
-            // Arrays para contar arroz guerrillero y arroz con pollo
+            // Arrays para contar arroz guerrillero
             const arrozGuerrilleros = Array(gameState.players.length).fill(0);
-            const arrozConPollos = Array(gameState.players.length).fill(0);
             
+            // Clear current points for recalculation based on all played cards
+            gameState.players.forEach(player => {
+                player.puntos = 0; 
+                player.natillas = 0; // Reset for recalculation of end-game effects
+                player.ensalada_fruta = 0; // Reset for recalculation of end-game effects
+            });
+
             // Primera pasada: contar cartas especiales y puntos básicos
             gameState.players.forEach((player, j) => {
                 const contador = {};
@@ -849,10 +844,15 @@
                         else if (carta === "arepa rellena") baseArepaPoints = 3;
                         
                         // Add 2x base points to make it 3x total, as base points will be added later
+
                         player.puntos += baseArepaPoints *2 ; 
                         mantequillaEffectActive = false; // Reset flag after applying bonus
                     } else {
                         squillaEffectActive = false; // Reset if the next card is not an affected arepa
+                        player.puntos += baseArepaPoints * 2; 
+                        mantequillaEffectActive = false; // Reset flag after applying bonus
+                    } else {
+                        mantequillaEffectActive = false; // Reset if the next card is not an affecte
                     }
 
                     // Count natillas and ensaladas for final scoring
@@ -870,65 +870,85 @@
                 player.puntos += (contador["arepa"] || 0);             // Original points
                 
                 // Puntos por consome (si nadie más la jugó)
-                if ((contador["consome"] || 0) > 0 && !alguienJugoConsome(j)) {
+                // This logic needs to iterate over all played cards to check if ANY consome exists for other players
+                const hasConsome = (contador["consome"] || 0) > 0;
+                const otherPlayersPlayedConsome = gameState.players.some((otherPlayer, otherIndex) => 
+                    otherIndex !== j && otherPlayer.cartasJugadas.includes("consome")
+                );
+
+                if (hasConsome && !otherPlayersPlayedConsome) {
                     player.puntos += 3;
                 }
                 
-                // Contar arroces
+                // Contar arroces (now only arroz guerrillero)
                 arrozGuerrilleros[j] = contarArrozGuerrillero(player.cartasJugadas);
-                arrozConPollos[j] = contarArrozConPollo(player.cartasJugadas);
             });
             
-            // Calcular puntos por arroz guerrillero
+            // Calcular puntos por arroz guerrillero (applies to both decks now)
             const maxArrozGuerrillero = Math.max(...arrozGuerrilleros);
             if (maxArrozGuerrillero > 0) {
-                const segundoArrozGuerrillero = Math.max(...arrozGuerrilleros.filter(val => val < maxArrozGuerrillero));
+                // Find the second highest, filtering out values equal to the max
+                const uniqueArrozGuerrilleros = [...new Set(arrozGuerrilleros)].sort((a,b) => b-a);
+                const segundoArrozGuerrillero = uniqueArrozGuerrilleros.length > 1 ? uniqueArrozGuerrilleros[1] : -1; // -1 if no second highest
                 
                 gameState.players.forEach((player, j) => {
                     if (arrozGuerrilleros[j] === maxArrozGuerrillero) {
-                        player.puntos += 6;
+                        player.puntos += 6; // Highest adds 6
                     } else if (arrozGuerrilleros[j] === segundoArrozGuerrillero && segundoArrozGuerrillero > 0) {
-                        player.puntos += 3;
+                        player.puntos += 3; // Second highest adds 3
                     }
                 });
             }
             
-            // Calcular puntos por arroz con pollo
-            const maxArrozConPollo = Math.max(...arrozConPollos);
-            if (maxArrozConPollo > 0) {
-                const segundoArrozConPollo = Math.max(...arrozConPollos.filter(val => val < maxArrozConPollo));
-                
-                gameState.players.forEach((player, j) => {
-                    if (arrozConPollos[j] === maxArrozConPollo) {
-                        player.puntos += 4;
-                    } else if (arrozConPollo[j] === segundoArrozConPollo && segundoArrozConPollo > 0) {
-                        player.puntos -= 4;
-                    }
-                });
-            }
             
-            // Mostrar puntuación parcial
+            // Mostrar puntuación parcial (this will now show the cumulative score)
             showScores();
         }
 
         function calculateFinalScores() {
-            // Primero calcular puntuación normal
-            calculateScores();
-            
-            // Luego añadir puntos finales por natillas y ensaladas
+            // Recalculate all scores one last time to ensure all bonuses are applied based on final counts
+            // This is needed because `calculateScores` is called at the end of each round, but `natillas`
+            // and `ensalada_fruta` points are applied here.
+            // By calling calculateScores() here, we ensure final accumulation and then apply final bonuses.
+            calculateScores(); // Re-calculate to ensure all previous round totals are correct
+
             const natillas = gameState.players.map(p => p.natillas);
             const maxNatilla = Math.max(...natillas);
-            const minNatilla = Math.min(...natillas.filter(n => n > 0));
-            
+            // Consider edge case where all players have 0 natillas, or all players have the same (max) natilla count
+            const minNatilla = Math.min(...natillas); // No filter for > 0, as 0 is a valid min
+
+            // Identify players with max/min natillas, considering ties
+            const playersWithMaxNatilla = gameState.players.filter(p => p.natillas === maxNatilla && maxNatilla > 0);
+            // For min natillas, we need to ensure they are not also tied for max (unless everyone has the same)
+            const playersWithMinNatilla = gameState.players.filter(p => p.natillas === minNatilla);
+
+
+            // Apply points for natillas
+            // If there's a unique max natilla player, they get bonus. If tied, all tied get bonus.
+            if (playersWithMaxNatilla.length > 0) {
+                playersWithMaxNatilla.forEach(player => {
+                    // Only add if they are not also a min (unless everyone is tied for max/min)
+                    const isAlsoMin = playersWithMinNatilla.includes(player);
+                    if (!isAlsoMin || (playersWithMaxNatilla.length === gameState.players.length)) {
+                         player.puntos += 6;
+                    }
+                });
+            }
+
+            // Apply penalty for min natillas
+            // If there's a unique min natilla player, they get penalty. If tied, all tied get penalty.
+            if (playersWithMinNatilla.length > 0) {
+                playersWithMinNatilla.forEach(player => {
+                     // Only penalize if they are not also a max (unless everyone is tied for max/min)
+                    const isAlsoMax = playersWithMaxNatilla.includes(player);
+                    if (!isAlsoMax || (playersWithMinNatilla.length === gameState.players.length)) {
+                        player.puntos -= 6;
+                    }
+                });
+            }
+
+            // Puntos por ensalada de fruta (12 puntos por cada 4 cartas)
             gameState.players.forEach(player => {
-                if (player.natillas === maxNatilla && maxNatilla > 0) {
-                    player.puntos += 6;
-                }
-                if (player.natillas === minNatilla && minNatilla > 0) {
-                    player.puntos -= 6;
-                }
-                
-                // Puntos por ensalada de fruta (12 puntos por cada 4 cartas)
                 player.puntos += Math.floor(player.ensalada_fruta / 4) * 12;
             });
         }
@@ -958,16 +978,9 @@
             }, 0);
         }
 
-        function contarArrozConPollo(cartas) {
-            return cartas.reduce((total, carta) => {
-                if (carta === "arroz con pollo(1)") return total + 1;
-                if (carta === "arroz con pollo(2)") return total + 2;
-                if (carta === "arroz con pollo(3)") return total + 3;
-                return total;
-            }, 0);
-        }
 
         function alguienJugoConsome(jugadorActual) {
+            // Check if any OTHER player has played 'consome' among all their played cards.
             return gameState.players.some((player, index) =>
                 index !== jugadorActual &&
                 player.cartasJugadas.includes("consome")
