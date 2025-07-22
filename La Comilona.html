@@ -607,8 +607,8 @@
                 // image: "images/natilla.png"
             },
             "mantequilla": {
-                description: "¡Cuidado! Las mantequillas restan puntos al final del juego.",
-                points: "No especificado en el original, pero suelen restar puntos. (Adjust as per actual game rules)"
+                description: "Si juegas 'mantequilla' y la siguiente carta que juegas es una arepa (de cualquier tipo), esa arepa vale el triple de sus puntos base.",
+                points: "0 puntos. Triplica los puntos de la siguiente arepa jugada por el mismo jugador."
                 // image: "images/mantequilla.png"
             },
             "tenedor": {
@@ -637,13 +637,13 @@
                 // image: "images/arroz_con_pollo3.png"
             },
             "ensalada de fruta": {
-                description: "Las ensaladas de fruta dan puntos al final del juego, pero también pueden interactuar con la carta 'consome'.",
-                points: "12 puntos por cada 4 ensaladas de fruta. Si se jugó 'consome' por un solo jugador, suma puntos extra por el tipo de carta más repetido."
+                description: "Las ensaladas de fruta dan puntos al final del juego al tener sets de 4.",
+                points: "12 puntos por cada 4 ensaladas de fruta."
                 // image: "images/ensalada_de_fruta.png"
             },
             "consome": {
-                description: "Si eres el único jugador en tener 'consome', obtienes puntos y tu 'ensalada de fruta' vale más. Si varios tienen 'consome', se anula.",
-                points: "3 puntos si eres el único con 'consome'. Además, tus 'ensaladas de fruta' valen la cantidad del tipo de carta más repetida."
+                description: "Si eres el único jugador en tener 'consome', obtienes puntos. Si varios tienen 'consome', se anula.",
+                points: "3 puntos si eres el único con 'consome'."
                 // image: "images/consome.png"
             }
         };
@@ -795,7 +795,7 @@
 
         function endRound() {
             // Calcular puntuaciones de la ronda
-            calculateScores();
+
             
             // Pasar a la siguiente ronda o terminar el juego
             if (gameState.currentRound < gameState.totalRounds) {
@@ -816,36 +816,46 @@
             // Primera pasada: contar cartas especiales y puntos básicos
             gameState.players.forEach((player, j) => {
                 const contador = {};
-                
-                // Contar cada tipo de carta
+                let mantequillaEffectActive = false; // Flag to track if mantequilla was just played
+
+                // Iterate through cards played in sequence for mantequilla effect
                 player.cartasJugadas.forEach(carta => {
-                    contador[carta] = (contador[carta] || 0) + 1;
-                    
-                    // Contar natillas y ensaladas
+                    contador[carta] = (contador[carta] || 0) + 1; // Count all cards normally
+
+                    // Check for mantequilla effect
+                    if (carta === "mantequilla") {
+                        mantequillaEffectActive = true;
+                    } else if (mantequillaEffectActive && 
+                               (carta === "arepa" || carta === "arepa boyacense" || carta === "arepa rellena")) {
+                        let baseArepaPoints = 0;
+                        if (carta === "arepa") baseArepaPoints = 1;
+                        else if (carta === "arepa boyacense") baseArepaPoints = 2;
+                        else if (carta === "arepa rellena") baseArepaPoints = 3;
+                        
+                        // Add 2x base points to make it 3x total, as base points will be added later
+                        player.puntos += baseArepaPoints *2 ; 
+                        mantequillaEffectActive = false; // Reset flag after applying bonus
+                    } else {
+                        squillaEffectActive = false; // Reset if the next card is not an affected arepa
+                    }
+
+                    // Count natillas and ensaladas for final scoring
                     if (carta === "natilla") player.natillas++;
                     if (carta === "ensalada de fruta") player.ensalada_fruta++;
                 });
                 
-                // Calcular puntos básicos
+                // Calculate basic points (this now includes original arepa points)
                 player.puntos += Math.floor((contador["chicharron"] || 0) / 2) * 5;
                 player.puntos += Math.floor((contador["picada"] || 0) / 3) * 10;
                 player.puntos += puntosEmpanadas(contador["empanadas"] || 0);
                 player.puntos += puntosYuca(contador["yuca"] || 0);
-                player.puntos += (contador["arepa boyacense"] || 0) * 2;
-                player.puntos += (contador["arepa rellena"] || 0) * 3;
-                player.puntos += (contador["arepa"] || 0);
+                player.puntos += (contador["arepa boyacense"] || 0) * 2; // Original points
+                player.puntos += (contador["arepa rellena"] || 0) * 3;   // Original points
+                player.puntos += (contador["arepa"] || 0);             // Original points
                 
                 // Puntos por consome (si nadie más la jugó)
                 if ((contador["consome"] || 0) > 0 && !alguienJugoConsome(j)) {
                     player.puntos += 3;
-                    
-                    // Puntos por aguapanela (ensalada de fruta)
-                    const cartasAguapanela = contador["ensalada de fruta"] || 0;
-                    if (cartasAguapanela > 0) {
-                        const tipoMasRepetido = obtenerTipoMasRepetido(player.cartasJugadas);
-                        const puntosAguapanela = tipoMasRepetido.cantidad * cartasAguapanela;
-                        player.puntos += puntosAguapanela;
-                    }
                 }
                 
                 // Contar arroces
@@ -947,31 +957,7 @@
                 player.cartasJugadas.includes("consome")
             );
         }
-
-        function obtenerTipoMasRepetido(cartas) {
-            const contador = {};
-            
-            // Excluir ensalada de fruta del conteo
-            cartas.forEach(carta => {
-                if (carta !== "ensalada de fruta") {
-                    contador[carta] = (contador[carta] || 0) + 1;
-                }
-            });
-            
-            if (Object.keys(contador).length === 0) return { tipo: "", cantidad: 0 };
-            
-            let maxTipo = "";
-            let maxCantidad = 0;
-            
-            for (const [tipo, cantidad] of Object.entries(contador)) {
-                if (cantidad > maxCantidad) {
-                    maxTipo = tipo;
-                    maxCantidad = cantidad;
-                }
-            }
-            
-            return { tipo: maxTipo, cantidad: maxCantidad };
-        }
+        // The obtenerTipoMasRepetido function has been removed.
 
         function showScores() {
             scoresContent.innerHTML = '';
