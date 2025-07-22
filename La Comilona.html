@@ -289,6 +289,24 @@
                 font-size: 0.7rem;
             }
         }
+        .card-detail-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .card-detail-item h3 {
+            color: var(--secondary-color);
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .card-detail-item p {
+            margin-bottom: 5px;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -352,9 +370,18 @@
                     <button id="end-round">Terminar Ronda</button>
                     <button id="show-scores">Ver Puntuaciones</button>
                     <button id="end-game">Terminar Juego</button>
+                    <button id="show-card-details">Ver Cartas</button>
                 </div>
             </div>
         </section>
+    </div>
+    <div id="card-details-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Detalles de las Cartas</h2>
+            <div id="card-details-content">
+                </div>
+            <button class="close-modal">Cerrar</button>
+        </div>
     </div>
     
     <div id="scores-modal" class="modal">
@@ -452,6 +479,10 @@
         const endgameContent = document.getElementById('endgame-content');
         const newGameBtn = document.getElementById('new-game');
         const closeModalBtns = document.querySelectorAll('.close-modal');
+        const showCardDetailsBtn = document.getElementById('show-card-details');
+        const cardDetailsModal = document.getElementById('card-details-modal');
+        const cardDetailsContent = document.getElementById('card-details-content');
+
 
         // Event Listeners
         startGameBtn.addEventListener('click', startGame);
@@ -459,10 +490,12 @@
         showScoresBtn.addEventListener('click', showScores);
         endGameBtn.addEventListener('click', endGame);
         newGameBtn.addEventListener('click', resetGame);
+        showCardDetailsBtn.addEventListener('click', showCardDetails);
         
         closeModalBtns.forEach(btn => {
             btn.addEventListener('click', () => {
                 scoresModal.style.display = 'none';
+                cardDetailsModal.style.display = 'none';
                 endgameModal.style.display = 'none';
             });
         });
@@ -524,6 +557,128 @@
             // Iniciar la primera ronda
             startRound();
         }
+        //Info de todas las cartas
+        const CARD_DESCRIPTIONS = {
+            "chicharron": {
+                description: "Sumas puntos por cada par de chicharrones. Cuantos más pares, más puntos.",
+                points: "5 puntos por cada 2 chicharrones."
+                // image: "images/chicharron.png"
+            },
+            "picada": {
+                description: "Obtienes puntos por cada tres picadas. Un plato abundante para grandes puntuaciones.",
+                points: "10 puntos por cada 3 picadas."
+                // image: "images/picada.png"
+            },
+            "empanadas": {
+                description: "Las empanadas son deliciosas y te dan puntos según la cantidad que tengas. ¡Más es mejor!",
+                points: "1: 1 punto, 2: 3 puntos, 3: 6 puntos, 4: 10 puntos, 5+: 15 puntos."
+                // image: "images/empanadas.png"
+            },
+            "arepa boyacense": {
+                description: "Una arepa tradicional que suma puntos individuales.",
+                points: "2 puntos por cada una."
+                // image: "images/arepa_boyacense.png"
+            },
+            "arepa rellena": {
+                description: "La arepa rellena es más sustanciosa y te da más puntos.",
+                points: "3 puntos por cada una."
+                // image: "images/arepa_rellena.png"
+            },
+            "arepa": {
+                description: "Una arepa básica que aporta puntos mínimos.",
+                points: "1 punto por cada una."
+                // image: "images/arepa.png"
+            },
+            "arroz guerrillero(1)": {
+                description: "Parte de la serie Arroz Guerrillero. Contribuye a la suma total para el bono de mayoría.",
+                points: "+1 al conteo de Arroz Guerrillero."
+                // image: "images/arroz_guerrillero1.png"
+            },
+            "arroz guerrillero(2)": {
+                description: "Parte de la serie Arroz Guerrillero. Contribuye significativamente al bono de mayoría.",
+                points: "+2 al conteo de Arroz Guerrillero."
+                // image: "images/arroz_guerrillero2.png"
+            },
+            "arroz guerrillero(3)": {
+                description: "La carta de Arroz Guerrillero de mayor valor. Es clave para obtener la mayoría.",
+                points: "+3 al conteo de Arroz Guerrillero."
+                // image: "images/arroz_guerrillero3.png"
+            },
+            "natilla": {
+                description: "Las natillas dan puntos al final del juego al jugador con más natillas y penalizan al que tiene menos.",
+                points: "El que tiene más natillas al final, gana 6 puntos. El que tiene menos, pierde 6 puntos."
+                // image: "images/natilla.png"
+            },
+            "mantequilla": {
+                description: "¡Cuidado! Las mantequillas restan puntos al final del juego.",
+                points: "No especificado en el original, pero suelen restar puntos. (Adjust as per actual game rules)"
+                // image: "images/mantequilla.png"
+            },
+            "tenedor": {
+                description: "Los tenedores son cartas que no tienen un efecto directo en la puntuación, pero pueden ser útiles para robar o intercambiar (si esa regla existiera).",
+                points: "0 puntos. (Adjust as per actual game rules)"
+                // image: "images/tenedor.png"
+            },
+            "yuca": {
+                description: "La yuca otorga puntos si tienes una o dos. Más de dos no suman.",
+                points: "1 yuca: 1 punto. 2 yucas: 6 puntos."
+                // image: "images/yuca.png"
+            },
+            "arroz con pollo(1)": {
+                description: "Parte de la serie Arroz con Pollo. Contribuye a la suma total para el bono de mayoría.",
+                points: "+1 al conteo de Arroz con Pollo."
+                // image: "images/arroz_con_pollo1.png"
+            },
+            "arroz con pollo(2)": {
+                description: "Parte de la serie Arroz con Pollo. Contribuye significativamente al bono de mayoría.",
+                points: "+2 al conteo de Arroz con Pollo."
+                // image: "images/arroz_con_pollo2.png"
+            },
+            "arroz con pollo(3)": {
+                description: "La carta de Arroz con Pollo de mayor valor. Es clave para obtener la mayoría.",
+                points: "+3 al conteo de Arroz con Pollo."
+                // image: "images/arroz_con_pollo3.png"
+            },
+            "ensalada de fruta": {
+                description: "Las ensaladas de fruta dan puntos al final del juego, pero también pueden interactuar con la carta 'consome'.",
+                points: "12 puntos por cada 4 ensaladas de fruta. Si se jugó 'consome' por un solo jugador, suma puntos extra por el tipo de carta más repetido."
+                // image: "images/ensalada_de_fruta.png"
+            },
+            "consome": {
+                description: "Si eres el único jugador en tener 'consome', obtienes puntos y tu 'ensalada de fruta' vale más. Si varios tienen 'consome', se anula.",
+                points: "3 puntos si eres el único con 'consome'. Además, tus 'ensaladas de fruta' valen la cantidad del tipo de carta más repetida."
+                // image: "images/consome.png"
+            }
+        };
+        function showCardDetails() {
+            cardDetailsContent.innerHTML = ''; // Clear previous content
+
+            // Get all unique card names from all decks
+            const allCardNames = new Set();
+            for (const deckName in MAZOS) {
+                MAZOS[deckName].forEach(card => allCardNames.add(card));
+            }
+
+            // Sort card names for consistent display
+            const sortedCardNames = Array.from(allCardNames).sort();
+
+            sortedCardNames.forEach(cardName => {
+                const cardInfo = CARD_DESCRIPTIONS[cardName] || { description: "Descripción no disponible.", points: "Puntos no especificados.", image: "" };
+                
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card-detail-item'; // Add a class for styling
+                cardDiv.innerHTML = `
+                    <h3>${cardName.replace(/\(\d\)/g, '')}</h3> ${cardInfo.image ? `<img src="${cardInfo.image}" alt="${cardName}" style="width: 80px; height: 120px; margin-bottom: 10px;">` : ''}
+                    <p><strong>Función:</strong> ${cardInfo.description}</p>
+                    <p><strong>Puntuación:</strong> ${cardInfo.points}</p>
+                    <hr>
+                `;
+                cardDetailsContent.appendChild(cardDiv);
+            });
+
+            cardDetailsModal.style.display = 'flex';
+        }
+        
 
         function startRound() {
             // Barajar el mazo
