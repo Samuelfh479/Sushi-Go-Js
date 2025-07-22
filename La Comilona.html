@@ -363,8 +363,7 @@
             
             <div class="game-board">
                 <div class="players-container" id="players-container">
-                    <!-- Jugadores se añadirán aquí dinámicamente -->
-                </div>
+                    </div>
                 
                 <div class="game-controls">
                     <button id="end-round">Terminar Ronda</button>
@@ -388,8 +387,7 @@
         <div class="modal-content">
             <h2 class="modal-title">Puntuaciones</h2>
             <div id="scores-content">
-                <!-- Contenido de puntuaciones se añadirá aquí -->
-            </div>
+                </div>
             <button class="close-modal">Cerrar</button>
         </div>
     </div>
@@ -398,8 +396,7 @@
         <div class="modal-content">
             <h2 class="modal-title">Resultados Finales</h2>
             <div id="endgame-content">
-                <!-- Contenido final se añadirá aquí -->
-            </div>
+                </div>
             <button class="close-modal">Cerrar</button>
             <button id="new-game">Nuevo Juego</button>
         </div>
@@ -751,7 +748,7 @@
         }
 
         function selectCard(playerIndex, cardIndex) {
-            if (playerIndex !== gameState.currentPlayer) return;
+            if (playerIndex !== gameState.currentPlayer) return; // Only active player can select
             
             const selectedCard = gameState.players[playerIndex].mano[cardIndex];
             
@@ -761,34 +758,40 @@
                 }
             }
             
-            // Mover la carta de la mano a las cartas jugadas
+            // Move the card from hand to played cards
             const [playedCard] = gameState.players[playerIndex].mano.splice(cardIndex, 1);
             gameState.players[playerIndex].cartasJugadas.push(playedCard);
             
-            // Verificar si todos han jugado
-            const allPlayed = gameState.players.every(p => p.cartasJugadas.length === gameState.currentRound);
-            
-            if (allPlayed) {
-                // Rotar manos si no es el último turno
-                if (gameState.currentRound < gameState.cardsPerPlayer) {
-                    const lastHand = gameState.players[gameState.players.length - 1].mano;
-                    for (let i = gameState.players.length - 1; i > 0; i--) {
-                        gameState.players[i].mano = gameState.players[i - 1].mano;
+            // Check if all players have played a card for the current "trick" (turn within the round)
+            const allPlayedTheirTurn = gameState.players.every(p => p.cartasJugadas.length === gameState.players[0].cartasJugadas.length);
+            // This condition ensures everyone has played an equal number of cards in the current trick
+
+            // If it's the end of a "trick" (everyone played one card in this turn of the round)
+            if (allPlayedTheirTurn) {
+                // Only rotate hands if there are still cards left to play in the hand for the current round
+                // and it's not the very last card of the entire round for ALL players.
+                if (gameState.players[0].mano.length > 0) { // Check if players still have cards in hand
+                    const currentHands = gameState.players.map(player => [...player.mano]); // Create copies of current hands
+                    const numPlayers = gameState.players.length;
+
+                    for (let i = 0; i < numPlayers; i++) {
+                        // The hand of player 'i' receives the hand of player 'i-1' (circularly)
+                        gameState.players[i].mano = currentHands[(i + numPlayers - 1) % numPlayers];
                     }
-                    gameState.players[0].mano = lastHand;
                 }
                 
-                // Calcular puntuaciones si es el final de la ronda
-                if (gameState.currentRound === gameState.cardsPerPlayer) {
+                // If all cards for the current round have been played by everyone
+                if (gameState.players.every(p => p.cartasJugadas.length === gameState.cardsPerPlayer)) {
                     endRound();
                     return;
                 }
             }
             
-            // Pasar al siguiente jugador
+            // Move to the next player's turn
             gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
             updateGameUI();
         }
+
 
         function endRound() {
             // Calcular puntuaciones de la ronda
@@ -872,7 +875,7 @@
                 gameState.players.forEach((player, j) => {
                     if (arrozConPollos[j] === maxArrozConPollo) {
                         player.puntos += 4;
-                    } else if (arrozConPollos[j] === segundoArrozConPollo && segundoArrozConPollo > 0) {
+                    } else if (arrozConPollo[j] === segundoArrozConPollo && segundoArrozConPollo > 0) {
                         player.puntos -= 4;
                     }
                 });
@@ -939,8 +942,8 @@
         }
 
         function alguienJugoConsome(jugadorActual) {
-            return gameState.players.some((player, index) => 
-                index !== jugadorActual && 
+            return gameState.players.some((player, index) =>
+                index !== jugadorActual &&
                 player.cartasJugadas.includes("consome")
             );
         }
