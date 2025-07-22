@@ -559,94 +559,73 @@
         }
         //Info de todas las cartas
         const CARD_DESCRIPTIONS = {
-            "chicharron": {
-                description: "Sumas puntos por cada par de chicharrones. Cuantos más pares, más puntos.",
+            "Chicharron": {
+                description: "Un poco de grasa no esta mal. Sumas puntos por cada par de chicharrones. Cuantos más pares, más puntos.",
                 points: "5 puntos por cada 2 chicharrones."
                 // image: "images/chicharron.png"
             },
-            "picada": {
-                description: "Obtienes puntos por cada tres picadas. Un plato abundante para grandes puntuaciones.",
+            "Picada": {
+                description: "Un plato abundante para grandes puntuaciones. Obtienes puntos por cada tres picadas.",
                 points: "10 puntos por cada 3 picadas."
                 // image: "images/picada.png"
             },
-            "empanadas": {
-                description: "Las empanadas son deliciosas y te dan puntos según la cantidad que tengas. ¡Más es mejor!",
+            "Empanadas": {
+                description: "¿Quien puede cansarse de comer empanadas? Te dan puntos según la cantidad que tengas.",
                 points: "1: 1 punto, 2: 3 puntos, 3: 6 puntos, 4: 10 puntos, 5+: 15 puntos."
                 // image: "images/empanadas.png"
             },
-            "arepa boyacense": {
-                description: "Una arepa tradicional que suma puntos individuales.",
+            "Arepa Boyacense": {
+                description: "Una arepa clasica que amerita un par de puntos.",
                 points: "2 puntos por cada una."
                 // image: "images/arepa_boyacense.png"
             },
-            "arepa rellena": {
-                description: "La arepa rellena es más sustanciosa y te da más puntos.",
+            "Arepa Rellena": {
+                description: "La arepa rellena es más contundente y sabrosa por ende te da más puntos.",
                 points: "3 puntos por cada una."
                 // image: "images/arepa_rellena.png"
             },
-            "arepa": {
-                description: "Una arepa básica que aporta puntos mínimos.",
+            "Arepa": {
+                description: "Una arepa salada que cumple. Sumate 1 punto.",
                 points: "1 punto por cada una."
                 // image: "images/arepa.png"
             },
-            "arroz guerrillero(1)": {
-                description: "Parte de la serie Arroz Guerrillero. Contribuye a la suma total para el bono de mayoría.",
-                points: "+1 al conteo de Arroz Guerrillero."
+            "Arroz guerrillero(1)": {
+                description: "Un almuerzo no es almuerzo sin arroz. No pienses en quedarte sin al menos un plato",
+                points: "Cada jugador cuenta cuántos arroces tiene. El jugador que tenga mas obtendrá una buenga ganancia de puntos, de lo contrario preparate por no ponerle una buena base a tu comida"
                 // image: "images/arroz_guerrillero1.png"
             },
-            "arroz guerrillero(2)": {
-                description: "Parte de la serie Arroz Guerrillero. Contribuye significativamente al bono de mayoría.",
-                points: "+2 al conteo de Arroz Guerrillero."
-                // image: "images/arroz_guerrillero2.png"
-            },
-            "arroz guerrillero(3)": {
-                description: "La carta de Arroz Guerrillero de mayor valor. Es clave para obtener la mayoría.",
-                points: "+3 al conteo de Arroz Guerrillero."
-                // image: "images/arroz_guerrillero3.png"
-            },
-            "natilla": {
-                description: "Las natillas dan puntos al final del juego al jugador con más natillas y penalizan al que tiene menos.",
+            "Natilla": {
+                description: "Quien puede odiar a la natilla? el que tenga mas al final del juego obtendra mas puntos y el que menos se le penalizara",
                 points: "El que tiene más natillas al final, gana 6 puntos. El que tiene menos, pierde 6 puntos."
                 // image: "images/natilla.png"
             },
-            "mantequilla": {
-                description: "¡Cuidado! Las mantequillas restan puntos al final del juego.",
-                points: "No especificado en el original, pero suelen restar puntos. (Adjust as per actual game rules)"
+            "Mantequilla": {
+                description: "¿Que es una buena arepa sin mantequilla? Agregale mas sabor con una buena pasada de mantequilla",
+                points: "Si la ultima carta que jugaste fue una arepa dobla los puntos de esta!"
                 // image: "images/mantequilla.png"
             },
-            "tenedor": {
-                description: "Los tenedores son cartas que no tienen un efecto directo en la puntuación, pero pueden ser útiles para robar o intercambiar (si esa regla existiera).",
-                points: "0 puntos. (Adjust as per actual game rules)"
+            "Tenedor": {
+                description: "Usa el tenedor para robarte un plato de más",
                 // image: "images/tenedor.png"
             },
-            "yuca": {
-                description: "La yuca otorga puntos si tienes una o dos. Más de dos no suman.",
-                points: "1 yuca: 1 punto. 2 yucas: 6 puntos."
+            "Yuca": {
+                description: "La yuca es buena, pero nadie quisiera repetir mas de una vez.",
+                points: "Con 1 yuca ganas 2 puntos, con 2 ganas 6 pero con 3 o mas no ganas puntos."
                 // image: "images/yuca.png"
             },
             "arroz con pollo(1)": {
-                description: "Parte de la serie Arroz con Pollo. Contribuye a la suma total para el bono de mayoría.",
-                points: "+1 al conteo de Arroz con Pollo."
+                description: "Cada jugador suma los simbolos que aparecen en la carta.",
+                points: "El jugador que tenga mas gana 6 puntos, el segundo gana 3."
                 // image: "images/arroz_con_pollo1.png"
             },
-            "arroz con pollo(2)": {
-                description: "Parte de la serie Arroz con Pollo. Contribuye significativamente al bono de mayoría.",
-                points: "+2 al conteo de Arroz con Pollo."
-                // image: "images/arroz_con_pollo2.png"
-            },
-            "arroz con pollo(3)": {
-                description: "La carta de Arroz con Pollo de mayor valor. Es clave para obtener la mayoría.",
-                points: "+3 al conteo de Arroz con Pollo."
-                // image: "images/arroz_con_pollo3.png"
-            },
             "ensalada de fruta": {
-                description: "Las ensaladas de fruta dan puntos al final del juego, pero también pueden interactuar con la carta 'consome'.",
-                points: "12 puntos por cada 4 ensaladas de fruta. Si se jugó 'consome' por un solo jugador, suma puntos extra por el tipo de carta más repetido."
+                description: "Las ensaladas de fruta necesitan ser disfrutadas al final. Al final del juego suma cuantas obtuviste",
+                points: "12 puntos por cada 4 ensaladas de fruta. ."
                 // image: "images/ensalada_de_fruta.png"
             },
             "consome": {
-                description: "Si eres el único jugador en tener 'consome', obtienes puntos y tu 'ensalada de fruta' vale más. Si varios tienen 'consome', se anula.",
-                points: "3 puntos si eres el único con 'consome'. Además, tus 'ensaladas de fruta' valen la cantidad del tipo de carta más repetida."
+                description: "Si eres el único jugador en jugarla en ese turno, obtienes puntos. Pero si varios la juegan se descarta esta carta",
+                points: "3 puntos si eres el único con consome. De lo contrario todas se descartan"
                 // image: "images/consome.png"
             }
         };
