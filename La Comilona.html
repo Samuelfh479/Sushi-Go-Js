@@ -530,6 +530,7 @@
                 mano: [],
                 cartasJugadas: [],
                 puntos: 0,
+                consomeBonusPoints: 0,
                 natillas: 0,
                 ensalada_fruta: 0
             }));
@@ -619,7 +620,7 @@
             },
             "consome": {
                 description: "El propio levantamuertos, no dejes que te hagan compartirlo",
-                points: "3 puntos si eres el único con un consome, de lo contrario no valdra nada si alguien más lo juega tambien en el turno."
+                points: "3 puntos si eres el único con un consome, de lo contrario no valdrá nada si alguién más también lo juega en el turno."
                 // image: "images/consome.png"
             }
         };
@@ -742,53 +743,87 @@
         }
 
         function selectCard(playerIndex, cardIndex) {
-        if (playerIndex !== gameState.currentPlayer) return; // Asegura y asigna el turno de cada jugador.
-        
-        const originalCardFromHand = gameState.players[playerIndex].mano[cardIndex]; 
-        let cardToPushToPlayed = originalCardFromHand; // sta variable guarda el info de las cartas que se van jugando.
+            if (playerIndex !== gameState.currentPlayer) return; // Ensure only the active player can play
+            
+            const originalCardFromHand = gameState.players[playerIndex].mano[cardIndex]; 
+            let cardToPushToPlayed = originalCardFromHand;
 
-        if (originalCardFromHand === "tenedor") {
-            const playerPlayedCards = gameState.players[playerIndex].cartasJugadas;
-            if (playerPlayedCards.length > 0) {
-                const lastPlayedCardByThisPlayer = playerPlayedCards[playerPlayedCards.length - 1];
-                cardToPushToPlayed = lastPlayedCardByThisPlayer; // Tenedor takes on the identity of the copied card
-                alert(`¡Tenedor se ha convertido en "${lastPlayedCardByThisPlayer}"!`); // Inform the player
-            } else {
-                // SI EL TENEDOR ES LA PRIMERA CARTA, ESTA NO SE TRANFORMARA EN NINGUNA Y NO VALDRÁ NADA.
-                alert("¡Tenedor es tu primera carta jugada esta ronda y no puede copiar otra carta!"); // Inform the player
-            }
-        }
-        
-        if (cardToPushToPlayed === "consome") {
-            if (alguienJugoConsome(playerIndex)) {
-                alert("⚠️ ¡Otro jugador ya jugó consome! Esta carta (que ahora es consome) no te dará sus puntos especiales.");
-            }
-        }
-        
-        //Remueve la carta jugada de la mano del jugador
-        gameState.players[playerIndex].mano.splice(cardIndex, 1);
-        gameState.players[playerIndex].cartasJugadas.push(cardToPushToPlayed);
-        const allPlayedInThisTurnSlot = gameState.players.every(p => p.cartasJugadas.length === gameState.currentRound);
-        
-        if (allPlayedInThisTurnSlot) {
-            if (gameState.currentRound < gameState.cardsPerPlayer) {
-                // Este es para invertir las manos a cada jugador
-                const lastHand = gameState.players[gameState.players.length - 1].mano;
-                for (let i = gameState.players.length - 1; i > 0; i--) {
-                    gameState.players[i].mano = gameState.players[i - 1].mano;
+            if (originalCardFromHand === "tenedor") {
+                const playerPlayedCards = gameState.players[playerIndex].cartasJugadas;
+                if (playerPlayedCards.length > 0) {
+                    const lastPlayedCardByThisPlayer = playerPlayedCards[playerPlayedCards.length - 1];
+                    cardToPushToPlayed = lastPlayedCardByThisPlayer;
+                    alert(`¡Tenedor se ha convertido en "${lastPlayedCardByThisPlayer}"!`);
+                } else {
+                    alert("¡Tenedor es tu primera carta jugada esta ronda y no puede copiar otra carta!");
                 }
-                gameState.players[0].mano = lastHand;
             }
-            if (gameState.currentRound === gameState.cardsPerPlayer) {
-                endRound(); // Termina la ronda y calcula los puntajes
-                return; 
+            
+            
+            // Remove the played card from the player's hand
+            gameState.players[playerIndex].mano.splice(cardIndex, 1);
+            // Add the card to the player's played cards
+            gameState.players[playerIndex].cartasJugadas.push(cardToPushToPlayed);
+
+            // Determine the current 'trick' number (how many cards each player has played in this round so far)
+            // This is the number of cards that *should* be in every player's cartasJugadas array at the end of a trick.
+            const currentTrickNumber = gameState.players[playerIndex].cartasJugadas.length;
+
+            // Check if ALL players have now played 'currentTrickNumber' of cards
+            // This means an entire 'trick' (one card from each player) has been completed.
+            const allPlayersPlayedThisTrick = gameState.players.every(p => p.cartasJugadas.length === currentTrickNumber);
+            
+            if (allPlayersPlayedThisTrick) {
+                // All players have played their card for this 'trick'
+                evaluateTrickEffects(currentTrickNumber - 1);
+
+                if (currentTrickNumber < gameState.cardsPerPlayer) {
+                    // It's not the last trick of the round, so rotate hands
+                    const lastHand = gameState.players[gameState.players.length - 1].mano;
+                    for (let i = gameState.players.length - 1; i > 0; i--) {
+                        gameState.players[i].mano = gameState.players[i - 1].mano;
+                    }
+                    gameState.players[0].mano = lastHand;
+
+                    // Reset current player to 0 to start the next 'trick' from the first player
+                    gameState.currentPlayer = 0;
+                } else if (currentTrickNumber === gameState.cardsPerPlayer) {
+                    // All tricks in the round are played, end the round
+                    endRound();
+                    updateGameUI(); // Update UI to show end of round state before scores/modal
+                    return; // Important to return after endRound to prevent further execution in selectCard
+                }
+            } else {
+                // Not all players have played their card for this 'trick' yet, so pass turn to next player.
+                gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
             }
+            
+            updateGameUI(); // Always update UI after any state change, especially after passing turn
         }
         
-        // Verifica si el turno ya acabo, sino pasa al siguiente jugador
-        gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
-        updateGameUI(); 
-    }
+        function evaluateTrickEffects(trickIndex) {
+            // Lógica para Consomé
+            // Solo se aplica si el mazo es el ejecutivo.
+            if (gameState.selectedDeck === "El Ejecutivo") {
+                const consomePlayersInTrick = [];
+                gameState.players.forEach((player, index) => {
+                    // Obtener la última carta jugada por cada jugador en este turno
+                    const lastPlayedCard = player.cartasJugadas[trickIndex];
+                    if (lastPlayedCard === "consome") {
+                        consomePlayersInTrick.push(index);
+                    }
+                });
+
+                // Si solo un jugador jugó consome en este turno, le otorga los puntos
+                if (consomePlayersInTrick.length === 1) {
+                    const playerIndexWithConsome = consomePlayersInTrick[0];
+                    gameState.players[playerIndexWithConsome].consomeBonusPoints += 3;
+                    alert(`¡Jugador ${playerIndexWithConsome + 1} gana 3 puntos por ser el único con Consomé en este turno!`);
+                } else if (consomePlayersInTrick.length > 1) {
+                    alert(`Consomé anulado en este turno: ${consomePlayersInTrick.length} jugadores lo jugaron. Nadie gana puntos.`);
+                }
+            }
+        }
 
         function endRound() {
             // Calcular puntuaciones de la ronda
@@ -806,8 +841,6 @@
         }
 
         function calculateScores() {
-            // Arrays para contar arroz guerrillero
-            const arrozGuerrilleros = Array(gameState.players.length).fill(0);
             
             // Clear current points for recalculation based on all played cards
             gameState.players.forEach(player => {
@@ -816,12 +849,14 @@
                 player.ensalada_fruta = 0; // Reset for recalculation of end-game effects
             });
 
+            // Arrays para contar arroz guerrillero
+            const arrozGuerrilleros = Array(gameState.players.length).fill(0);
+
             // Primera pasada: contar cartas especiales y puntos básicos
             gameState.players.forEach((player, j) => {
                 const contador = {};
                 let mantequillaEffectActive = false; // Flag to track if mantequilla was just played
 
-                // Iterate through cards played in sequence for mantequilla effect
                 player.cartasJugadas.forEach(carta => {
                     contador[carta] = (contador[carta] || 0) + 1; // Count all cards normally
 
@@ -847,33 +882,26 @@
                     if (carta === "ensalada de fruta") player.ensalada_fruta++;
                 });
                 
-                // Calculate basic points (this now includes original arepa points)
+                // Calculate basic points
                 player.puntos += Math.floor((contador["chicharron"] || 0) / 2) * 5;
                 player.puntos += Math.floor((contador["picada"] || 0) / 3) * 10;
                 player.puntos += puntosEmpanadas(contador["empanadas"] || 0);
                 player.puntos += puntosYuca(contador["yuca"] || 0);
-                player.puntos += (contador["arepa boyacense"] || 0) * 2; // Original points
-                player.puntos += (contador["arepa rellena"] || 0) * 3;   // Original points
-                player.puntos += (contador["arepa"] || 0);             // Original points
+                 // Las arepas ya suman sus puntos base aquí
+                player.puntos += (contador["arepa boyacense"] || 0) * 2; 
+                player.puntos += (contador["arepa rellena"] || 0) * 3;   
+                player.puntos += (contador["arepa"] || 0);             
                 
-                // Puntos por consome (si nadie más la jugó)
-                const hasConsome = (contador["consome"] || 0) > 0;
-                const otherPlayersPlayedConsome = gameState.players.some((otherPlayer, otherIndex) => 
-                    otherIndex !== j && otherPlayer.cartasJugadas.includes("consome")
-                );
-
-                if (hasConsome && !otherPlayersPlayedConsome) {
-                    player.puntos += 3;
-                }
-                
-                // Contar arroces (now only arroz guerrillero)
+                // Contar arroz
                 arrozGuerrilleros[j] = contarArrozGuerrillero(player.cartasJugadas);
+                // Cuenta los puntos del consome
+                player.puntos += player.consomeBonusPoints || 0; 
+            
             });
             
-            // Calcular puntos por arroz guerrillero (applies to both decks now)
+            // Calcular puntos por arroz guerrillero 
             const maxArrozGuerrillero = Math.max(...arrozGuerrilleros);
             if (maxArrozGuerrillero > 0) {
-                // Find the second highest, filtering out values equal to the max
                 const uniqueArrozGuerrilleros = [...new Set(arrozGuerrilleros)].sort((a,b) => b-a);
                 const segundoArrozGuerrillero = uniqueArrozGuerrilleros.length > 1 ? uniqueArrozGuerrilleros[1] : -1; // -1 if no second highest
                 
@@ -887,42 +915,43 @@
             }
             
             
-            // Mostrar puntuación parcial )
+            // Mostrar puntuación parcial (this will now show the cumulative score)
             showScores();
         }
 
         function calculateFinalScores() {
+            // Recalculate all scores one last time to ensure all bonuses are applied based on final counts
+            // This is needed because `calculateScores` is called at the end of each round, but `natillas`
+            // and `ensalada_fruta` points are applied here.
+            // By calling calculateScores() here, we ensure final accumulation and then apply final bonuses.
             calculateScores(); // Re-calculate to ensure all previous round totals are correct
 
-            const natillas = gameState.players.map(p => p.natillas);
-            const maxNatilla = Math.max(...natillas);
-            const minNatilla = Math.min(...natillas); 
-            const playersWithMaxNatilla = gameState.players.filter(p => p.natillas === maxNatilla && maxNatilla > 0);
-            const playersWithMinNatilla = gameState.players.filter(p => p.natillas === minNatilla);
+            if (gameState.selectedDeck === "Clásico") {
+                const natillas = gameState.players.map(p => p.natillas);
+                const maxNatilla = Math.max(...natillas);
+                const minNatilla = Math.min(...natillas);
 
+                const playersWithMaxNatilla = gameState.players.filter(p => p.natillas === maxNatilla && maxNatilla > 0);
+                const playersWithMinNatilla = gameState.players.filter(p => p.natillas === minNatilla);
 
-            // Apply points for natillas
-            // If there's a unique max natilla player, they get bonus. If tied, all tied get bonus.
-            if (playersWithMaxNatilla.length > 0) {
-                playersWithMaxNatilla.forEach(player => {
-                    const isAlsoMin = playersWithMinNatilla.includes(player);
-                    if (!isAlsoMin || (playersWithMaxNatilla.length === gameState.players.length)) {
-                         player.puntos += 6;
-                    }
-                });
+                if (playersWithMaxNatilla.length > 0) {
+                    playersWithMaxNatilla.forEach(player => {
+                        const isAlsoMin = playersWithMinNatilla.includes(player);
+                        if (!isAlsoMin || (playersWithMaxNatilla.length === gameState.players.length)) {
+                            player.puntos += 6;
+                        }
+                    });
+                }
+
+                if (playersWithMinNatilla.length > 0) {
+                    playersWithMinNatilla.forEach(player => {
+                        const isAlsoMax = playersWithMaxNatilla.includes(player);
+                        if (!isAlsoMax || (playersWithMinNatilla.length === gameState.players.length)) {
+                            player.puntos -= 6;
+                        }
+                    });
+                }
             }
-
-
-            if (playersWithMinNatilla.length > 0) {
-                playersWithMinNatilla.forEach(player => {
-                     // Only penalize if they are not also a max (unless everyone is tied for max/min)
-                    const isAlsoMax = playersWithMaxNatilla.includes(player);
-                    if (!isAlsoMax || (playersWithMinNatilla.length === gameState.players.length)) {
-                        player.puntos -= 6;
-                    }
-                });
-            }
-
             // Puntos por ensalada de fruta (12 puntos por cada 4 cartas)
             gameState.players.forEach(player => {
                 player.puntos += Math.floor(player.ensalada_fruta / 4) * 12;
@@ -955,14 +984,6 @@
         }
 
 
-        function alguienJugoConsome(jugadorActual) {
-            // Check if any OTHER player has played 'consome' among all their played cards.
-            return gameState.players.some((player, index) =>
-                index !== jugadorActual &&
-                player.cartasJugadas.includes("consome")
-            );
-        }
-        // The obtenerTipoMasRepetido function has been removed.
 
         function showScores() {
             scoresContent.innerHTML = '';
