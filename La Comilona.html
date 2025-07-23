@@ -588,7 +588,7 @@
             },
             "arroz guerrillero(1)": {
                 description: "La base de cualquier comida. ¿Podrás agarrar mas que el resto al final?.",
-                points: "+1 al conteo de Arroz Guerrillero."
+                points: "."
                 // image: "images/arroz_guerrillero1.png"
             },
             "natilla": {
@@ -632,7 +632,10 @@
         for (const deckName in MAZOS) {
             MAZOS[deckName].forEach(card => {
                 if (card.startsWith("arroz guerrillero")) {
-                    displayCardNames.add("arroz guerrillero(1)"); 
+                    displayCardNames.add("arroz guerrillero(1)");
+                } else {
+                    displayCardNames.add(card); // Add all other cards as they are
+                }
                 } 
             });
         }
