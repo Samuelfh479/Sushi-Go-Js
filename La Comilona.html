@@ -588,7 +588,7 @@
             },
             "arroz guerrillero(1)": {
                 description: "La base de cualquier comida. ¿Podrás agarrar mas que el resto al final?.",
-                points: "."
+                points: "+1 al conteo de Arroz Guerrillero."
                 // image: "images/arroz_guerrillero1.png"
             },
             "natilla": {
@@ -624,63 +624,44 @@
             }
         };
         // Muestra los detalles de las cartas en su respectivo menu, adicional se actualizan automaticamente usando de manera directa los mazos.
-        function displayPlayedCards() {
-        const playersContainer = document.getElementById('players-container');
-        playersContainer.innerHTML = ''; // Clear previous display
+        function showCardDetails() {
+        cardDetailsContent.innerHTML = ''; // Clear previous content
 
-        gameState.players.forEach((player, index) => {
-            const playerDiv = document.createElement('div');
-            playerDiv.classList.add('player');
-            playerDiv.classList.add(`player-${index + 1}`);
-            const isCurrentPlayer = index === gameState.currentPlayer;
-            playerDiv.innerHTML = `<h3>Jugador ${index + 1} ${isCurrentPlayer ? '(Turno)' : ''} - ${player.puntos} puntos</h3>`;
-
-            const playedCardsDiv = document.createElement('div');
-            playedCardsDiv.classList.add('played-cards');
-
-            player.cartasJugadas.forEach(card => {
-                const cardInfo = CARD_DESCRIPTIONS.hasOwnProperty(card) ? CARD_DESCRIPTIONS\[card] : {};
-                const imgElement = document.createElement('img');
-                imgElement.classList.add('played-card-image');
-                imgElement.alt = card.replace(/\(\d\)/g, ''); // Alt text for accessibility
-                imgElement.title = card.replace(/\(\d\)/g, ''); // Title on hover
-                if (cardInfo.image) {
-                    imgElement.src = cardInfo.image; // Set the image source if available
-                } else {
-                    // Optionally provide a default image or text if the image path is missing
-                    imgElement.src = 'images/default_card.png';
-                    imgElement.style.border = '1px solid #ccc'; // Indicate missing image
-                    imgElement.style.backgroundColor = '#eee';
-                    imgElement.style.textAlign = 'center';
-                    imgElement.style.lineHeight = '80px';
-                    imgElement.textContent = card.replace(/\(\d\)/g, ''); // Show card name if no image
-                    imgElement.style.width = '60px';
-                    imgElement.style.height = '80px';
-                }
-                playedCardsDiv.appendChild(imgElement);
+       
+        const displayCardNames = new Set();
+        for (const deckName in MAZOS) {
+            MAZOS[deckName].forEach(card => {
+                if (card.startsWith("arroz guerrillero")) {
+                    displayCardNames.add("arroz guerrillero(1)"); 
+                } 
             });
+        }
 
-            playerDiv.appendChild(playedCardsDiv);
+        const sortedDisplayNames = Array.from(displayCardNames).sort();
 
-            const handDiv = document.createElement('div');
-            handDiv.classList.add('hand');
-            if (isCurrentPlayer) {
-                player.mano.forEach((card, i) => {
-                    const button = document.createElement('button');
-                    button.textContent = card.replace(/\(\d\)/g, '');
-                    button.classList.add('card');
-                    button.addEventListener('click', () => selectCard(index, i));
-                    handDiv.appendChild(button);
-                });
+        sortedDisplayNames.forEach(cardNameForLookup => {
+            const cardInfo = CARD_DESCRIPTIONS[cardNameForLookup] || { description: "Descripción no disponible.", points: "Puntos no especificados.", image: "" };
+            
+            let displayTitle = cardNameForLookup;
+            if (cardNameForLookup.startsWith("arroz guerrillero")) {
+                displayTitle = "arroz guerrillero"; 
             } else {
-                const hiddenHand = document.createElement('div');
-                hiddenHand.textContent = `Mano: ${player.mano.length} cartas`;
-                handDiv.appendChild(hiddenHand);
+                displayTitle = cardNameForLookup.replace(/\(\d\)/g, '');
             }
-            playerDiv.appendChild(handDiv);
 
-            playersContainer.appendChild(playerDiv);
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card-detail-item'; 
+            cardDiv.innerHTML = `
+                <h3>${displayTitle}</h3>
+                ${cardInfo.image ? `<img src="${cardInfo.image}" alt="${displayTitle}" style="width: 80px; height: 120px; margin-bottom: 10px;">` : ''}
+                <p><strong>Función:</strong> ${cardInfo.description}</p>
+                <p><strong>Puntuación:</strong> ${cardInfo.points}</p>
+                <hr>
+            `;
+            cardDetailsContent.appendChild(cardDiv);
         });
+
+        cardDetailsModal.style.display = 'flex';
     }
         
 
