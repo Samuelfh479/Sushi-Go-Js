@@ -588,7 +588,7 @@
             },
             "arroz guerrillero(1)": {
                 description: "La base de cualquier comida. ¿Podrás agarrar mas que el resto al final?.",
-                points: "+1 al conteo de Arroz Guerrillero."
+                points: "El que tenga mas gana 6 y el segundo con mas gana 3."
                 // image: "images/arroz_guerrillero1.png"
             },
             "natilla": {
@@ -619,7 +619,7 @@
             },
             "consome": {
                 description: "El propio levantamuertos, no dejes que te hagan compartirlo",
-                points: "3 puntos si eres el único con 'consome' de lo contrario no valdra nada si alguien mas tambien lo juega en el turno."
+                points: "3 puntos si eres el único con un consome, de lo contrario no valdra nada si alguien más lo juega tambien en el turno."
                 // image: "images/consome.png"
             }
         };
@@ -632,7 +632,11 @@
         for (const deckName in MAZOS) {
             MAZOS[deckName].forEach(card => {
                 if (card.startsWith("arroz guerrillero")) {
-                    displayCardNames.add("arroz guerrillero(1)"); 
+                    displayCardNames.add("arroz guerrillero(1)");
+                } else if (card.startsWith("arroz con pollo")) { // <-- THIS WAS MISSING OR INCOMPLETE
+                    displayCardNames.add("arroz con pollo(1)"); // Normalize all arroz con pollo variants to (1) for display
+                }else {
+                    displayCardNames.add(card); 
                 } 
             });
         }
@@ -853,7 +857,6 @@
                 player.puntos += (contador["arepa"] || 0);             // Original points
                 
                 // Puntos por consome (si nadie más la jugó)
-                // This logic needs to iterate over all played cards to check if ANY consome exists for other players
                 const hasConsome = (contador["consome"] || 0) > 0;
                 const otherPlayersPlayedConsome = gameState.players.some((otherPlayer, otherIndex) => 
                     otherIndex !== j && otherPlayer.cartasJugadas.includes("consome")
@@ -884,25 +887,17 @@
             }
             
             
-            // Mostrar puntuación parcial (this will now show the cumulative score)
+            // Mostrar puntuación parcial )
             showScores();
         }
 
         function calculateFinalScores() {
-            // Recalculate all scores one last time to ensure all bonuses are applied based on final counts
-            // This is needed because `calculateScores` is called at the end of each round, but `natillas`
-            // and `ensalada_fruta` points are applied here.
-            // By calling calculateScores() here, we ensure final accumulation and then apply final bonuses.
             calculateScores(); // Re-calculate to ensure all previous round totals are correct
 
             const natillas = gameState.players.map(p => p.natillas);
             const maxNatilla = Math.max(...natillas);
-            // Consider edge case where all players have 0 natillas, or all players have the same (max) natilla count
-            const minNatilla = Math.min(...natillas); // No filter for > 0, as 0 is a valid min
-
-            // Identify players with max/min natillas, considering ties
+            const minNatilla = Math.min(...natillas); 
             const playersWithMaxNatilla = gameState.players.filter(p => p.natillas === maxNatilla && maxNatilla > 0);
-            // For min natillas, we need to ensure they are not also tied for max (unless everyone has the same)
             const playersWithMinNatilla = gameState.players.filter(p => p.natillas === minNatilla);
 
 
@@ -910,7 +905,6 @@
             // If there's a unique max natilla player, they get bonus. If tied, all tied get bonus.
             if (playersWithMaxNatilla.length > 0) {
                 playersWithMaxNatilla.forEach(player => {
-                    // Only add if they are not also a min (unless everyone is tied for max/min)
                     const isAlsoMin = playersWithMinNatilla.includes(player);
                     if (!isAlsoMin || (playersWithMaxNatilla.length === gameState.players.length)) {
                          player.puntos += 6;
@@ -918,8 +912,7 @@
                 });
             }
 
-            // Apply penalty for min natillas
-            // If there's a unique min natilla player, they get penalty. If tied, all tied get penalty.
+
             if (playersWithMinNatilla.length > 0) {
                 playersWithMinNatilla.forEach(player => {
                      // Only penalize if they are not also a max (unless everyone is tied for max/min)
